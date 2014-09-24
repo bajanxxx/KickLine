@@ -1,0 +1,9 @@
+{
+  "firebase": "kickline-norm",
+  "public": ".",
+  "ignore": [
+    "firebase.json",
+    "**/.*",
+    "**/node_modules/**"
+  ]
+}

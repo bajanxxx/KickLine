@@ -6,46 +6,64 @@ angular.module('myApp.controllers', [])
 	.controller('LandingPageController', [function() {
 
 	}])
-	.controller('WaitlistController', ['$scope', '$firebase', function($scope, $firebase) {
-		// Connect $scope.parties to live Firebase data.
-		var customersRef = new Firebase('https://waitandeat-norm.firebaseio.com/customers');
-		$scope.customers = $firebase(customersRef);
+	.controller('WaitlistController', ['$scope', 'customerService', 'textMessageService', 'authService', function($scope, customerService, textMessageService, authService) {
+		
+		// Bind user's customers to $scope.customers.
+		authService.getCurrentUser().then(function(user) {
+			if (user) {
+				$scope.customers = customerService.getCustomersByUserId(user.id);
+			}
+		})
 
 		// Object to store data from the waitlist form.
 		$scope.newCustomer = {name: '', phone: '', size: '', done: false, notified: 'No'};
 
-		// Function to save a new party to the waitlist.
+		// Function to save a new customer to the waitlist.
 		$scope.saveCustomer = function() {
-			$scope.customers.$add($scope.newCustomer);
+			customerService.saveCustomer($scope.newCustomer, $scope.currentUser.id);
 			$scope.newCustomer = {name: '', phone: '', size: '', done: false, notified: 'No'};
 		};
 
-		// Function to send text messgae to a party.
-		$scope.sendTextMessage = function(party) {
-			var textMessageRef = new Firebase('https://kickline-norm.firebaseio.com/textMessages');
-			var textMessages = $firebase(textMessageRef);
-			var newTextMessage = {
-				phoneNumber: customer.phone, 
-				size: customer.size,
-				name: customer.name
-			};
-			textMessages.$add(newTextMessage);
-			customer.notified = 'Yes';
-			$scope.customers.$save(customer.$id);
+		// Function to send text messgae to a customer.
+		$scope.sendTextMessage = function(customer) {
+			textMessageService.sendTextMessage(customer, $scope.currentUser.id);
 		};
 	}])
-	.controller('AuthController', ['$scope', '$firebaseSimpleLogin', function($scope, $firebaseSimpleLogin) {
-		var authRef = new Firebase('https://kickline-norm.firebaseio.com/');
-		var auth = $firebaseSimpleLogin(authRef);
-
+	.controller('AuthController', ['$scope', 'authService', function($scope, authService) {
+		// Object bound to inputs on the register and login pages.
 		$scope.user = {email: '', password: ''};
 
+		// Method to register a new user using the authService.
 		$scope.register = function() {
-			auth.$createUser($scope.user.email, $scope.user.password).then(function(data) {
-				console.log(data);
-			});
+			authService.register($scope.user);
 		};
-	}]);
+
+		// Method to log in a user using the authService.
+		$scope.login = function() {
+			authService.login($scope.user);
+		};
+
+		// Method to log out a user using the authService.
+		$scope.logout = function() {
+			authService.logout();
+		};
+
+	}]); 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
